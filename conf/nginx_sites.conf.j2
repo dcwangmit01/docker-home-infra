@@ -17,7 +17,6 @@ server {
     server_name  {{ nginx.domains.davidwang.name }};
 
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-#   ssl    on;
     ssl_certificate    {{ nginx.ssl.pem }};
     ssl_certificate_key    {{ nginx.ssl.key }};
 
@@ -38,7 +37,6 @@ server {
     server_name  www.{{ nginx.domains.davidwang.name }};
 
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-#   ssl    on;
     ssl_certificate    {{ nginx.ssl.pem }};
     ssl_certificate_key    {{ nginx.ssl.key }};
 
@@ -66,7 +64,6 @@ server {
     server_name  {{ nginx.domains.cali.name }};
 
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-#   ssl    on;
     ssl_certificate    {{ nginx.ssl.pem }};
     ssl_certificate_key    {{ nginx.ssl.key }};
 
@@ -83,7 +80,6 @@ server {
     server_name  www.{{ nginx.domains.cali.name }};
 
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-#   ssl    on;
     ssl_certificate    {{ nginx.ssl.pem }};
     ssl_certificate_key    {{ nginx.ssl.key }};
 
@@ -111,7 +107,6 @@ server {
     server_name  registry.{{ nginx.domains.davidwang.name }} registry.{{ nginx.domains.paxarm.name }};
 
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-#   ssl    on;
     ssl_certificate    {{ nginx.ssl.pem }};
     ssl_certificate_key    {{ nginx.ssl.key }};
     autoindex on;
@@ -149,7 +144,6 @@ server {
     server_name  pvr.{{ nginx.domains.davidwang.name }};
 
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-#   ssl    on;
     ssl_certificate    {{ nginx.ssl.pem }};
     ssl_certificate_key    {{ nginx.ssl.key }};
 
@@ -174,7 +168,6 @@ server {
     server_name s.{{ nginx.domains.davidwang.name }} api.{{ nginx.domains.davidwang.name }}
         s.{{ nginx.domains.paxarm.name }} api.{{ nginx.domains.paxarm.name }} www.{{ nginx.domains.paxarm.name }};
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-#   ssl    on;
     ssl_certificate    {{ nginx.ssl.pem }};
     ssl_certificate_key    {{ nginx.ssl.key }};
     autoindex on;
@@ -191,7 +184,6 @@ server {
     server_name  whatismyip.{{ nginx.domains.davidwang.name }};
 
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-#   ssl    on;
     ssl_certificate    {{ nginx.ssl.pem }};
     ssl_certificate_key    {{ nginx.ssl.key }};
     autoindex on;
@@ -211,7 +203,6 @@ server {
     server_name  fax.{{ nginx.domains.davidwang.name }};
 
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-#   ssl    on;
     ssl_certificate    {{ nginx.ssl.pem }};
     ssl_certificate_key    {{ nginx.ssl.key }};
 
