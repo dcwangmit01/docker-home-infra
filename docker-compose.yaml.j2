@@ -42,10 +42,15 @@ services:
         aliases:
         - mysql
   caliwp:
-    image: wordpress:latest
+    image: wordpress:fpm-alpine
     volumes:
     - /docker-home-infra/volumes/caliwp/var/www/html:/var/www/html
     - /docker-home-infra/conf/wordpress_uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:ro
+    environment:
+        - WORDPRESS_DB_NAME=wordpress
+        - WORDPRESS_TABLE_PREFIX=wp_
+        - WORDPRESS_DB_HOST=mysql
+        - WORDPRESS_DB_PASSWORD={{ caliwpdb.MYSQL_ROOT_PASSWORD }}
     networks:
       caliwp:
   caliwpdb:
