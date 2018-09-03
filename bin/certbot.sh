@@ -1,9 +1,9 @@
 
 docker run --rm \
-       -v /kdk-home-infra/docker/letsencrypt/etc/letsencrypt:/etc/letsencrypt \
-       -v /kdk-home-infra/docker/letsencrypt/var/lib/letsencrypt:/var/lib/letsencrypt \
-       -v /kdk-home-infra/docker/letsencrypt/var/log/letsencrypt:/var/log/letsencrypt \
-       -v /kdk-home-infra/docker/nginx/web:/var/www \
+       -v /docker-home-infra/docker/letsencrypt/etc/letsencrypt:/etc/letsencrypt \
+       -v /docker-home-infra/docker/letsencrypt/var/lib/letsencrypt:/var/lib/letsencrypt \
+       -v /docker-home-infra/docker/letsencrypt/var/log/letsencrypt:/var/log/letsencrypt \
+       -v /docker-home-infra/docker/nginx/web:/var/www \
        deliverous/certbot \
        certonly \
        --non-interactive --agree-tos --expand \

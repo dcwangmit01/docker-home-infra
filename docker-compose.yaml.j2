@@ -15,10 +15,10 @@ services:
       - 80:80
       - 443:443
     volumes:
-      - /kdk-home-infra/docker/nginx/web:/var/www
-      - /kdk-home-infra/conf/nginx_sites.conf:/etc/nginx/conf.d/default.conf:ro
-      - /kdk-home-infra/conf/htpasswd:/etc/nginx/htpasswd:ro
-      - /kdk-home-infra/docker/letsencrypt/etc/letsencrypt:/etc/letsencrypt:ro
+      - /docker-home-infra/docker/nginx/web:/var/www
+      - /docker-home-infra/conf/nginx_sites.conf:/etc/nginx/conf.d/default.conf:ro
+      - /docker-home-infra/conf/htpasswd:/etc/nginx/htpasswd:ro
+      - /docker-home-infra/docker/letsencrypt/etc/letsencrypt:/etc/letsencrypt:ro
     networks:
       wp:
       caliwp:
@@ -27,8 +27,8 @@ services:
   wp:
     image: wordpress:latest
     volumes:
-    - /kdk-home-infra/docker/wp/var/www/html:/var/www/html
-    - /kdk-home-infra/conf/wordpress_uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:ro
+    - /docker-home-infra/docker/wp/var/www/html:/var/www/html
+    - /docker-home-infra/conf/wordpress_uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:ro
     networks:
       wp:
   wpdb:
@@ -36,7 +36,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: {{ wpdb.MYSQL_ROOT_PASSWORD }}
     volumes:
-      - /kdk-home-infra/docker/wpdb/var/lib/mysql:/var/lib/mysql
+      - /docker-home-infra/docker/wpdb/var/lib/mysql:/var/lib/mysql
     networks:
       wp:
         aliases:
@@ -44,8 +44,8 @@ services:
   caliwp:
     image: wordpress:latest
     volumes:
-    - /kdk-home-infra/docker/caliwp/var/www/html:/var/www/html
-    - /kdk-home-infra/conf/wordpress_uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:ro
+    - /docker-home-infra/docker/caliwp/var/www/html:/var/www/html
+    - /docker-home-infra/conf/wordpress_uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:ro
     networks:
       caliwp:
   caliwpdb:
@@ -53,7 +53,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: {{ caliwpdb.MYSQL_ROOT_PASSWORD }}
     volumes:
-      - /kdk-home-infra/docker/caliwpdb/var/lib/mysql:/var/lib/mysql
+      - /docker-home-infra/docker/caliwpdb/var/lib/mysql:/var/lib/mysql
     networks:
       caliwp:
         aliases:
@@ -65,8 +65,8 @@ services:
       - "2222:22"
     command: bash -c "apt-get update; apt-get install -y git; rm -f /etc/ssh/ssh_host_*; dpkg-reconfigure openssh-server; useradd git -m -G root -s /bin/bash -p '*'; mkdir -p /home/git/.ssh; cp /tmp/authorized_keys /home/git/.ssh/authorized_keys; chown -R git:git /home/git; echo 'git ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/git; /usr/sbin/sshd -D"
     volumes:
-      - /kdk-home-infra/docker/git/home/git:/home/git
-      - /kdk-home-infra/conf/authorized_keys:/tmp/authorized_keys:ro
+      - /docker-home-infra/docker/git/home/git:/home/git
+      - /docker-home-infra/conf/authorized_keys:/tmp/authorized_keys:ro
   aptcacherng:
     image: minimum2scp/apt-cacher-ng
     ports:
@@ -75,17 +75,17 @@ services:
   #    - ACNG_BACKENDS_DEBIAN=http://mirrors.us.kernel.org/debian/
   #    - ACNG_BACKENDS_UBUNTU=http://mirrors.us.kernel.org/ubuntu/
   #  volumes:
-  #    - /kdk-home-infra/docker/aptcacherng/var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng
+  #    - /docker-home-infra/docker/aptcacherng/var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng
   registry: # docker registry
     image: registry:2
     volumes:
-    - /kdk-home-infra/docker/registry/var/lib/registry:/var/lib/registry
+    - /docker-home-infra/docker/registry/var/lib/registry:/var/lib/registry
     networks:
       registry:
   vaporfax:
     image: bludesign/faxserver:latest
     volumes:
-    - /kdk-home-infra/docker/vaporfax/FaxServer/Public:/FaxServer/Public
+    - /docker-home-infra/docker/vaporfax/FaxServer/Public:/FaxServer/Public
     environment:
     - MONGO_HOST=mongofax
     - MONGO_PORT=27017
@@ -99,8 +99,8 @@ services:
   mongofax:
     image: mongo:4
     volumes:
-    - /kdk-home-infra/docker/mongofax/data/configdb:/data/configdb
-    - /kdk-home-infra/docker/mongofax/data/db:/data/db
+    - /docker-home-infra/docker/mongofax/data/configdb:/data/configdb
+    - /docker-home-infra/docker/mongofax/data/db:/data/db
     networks:
       fax:
 networks:
@@ -118,11 +118,11 @@ networks:
 #   ports:
 #     - 32400:32400
 #   volumes:
-#     - /kdk-home-infra/docker/plex/config:/config
+#     - /docker-home-infra/docker/plex/config:/config
 #     - /autofs/media:/media
 #
 #   # After creation:
-#   # sudo emacs /kdk-home-infra/docker/plex/config/Library/Application\ Support/Plex\ Media\ Server/Preferences.xml
+#   # sudo emacs /docker-home-infra/docker/plex/config/Library/Application\ Support/Plex\ Media\ Server/Preferences.xml
 #   # Add:  allowedNetworks="192.168.3.0/255.255.255.0"
 
 
