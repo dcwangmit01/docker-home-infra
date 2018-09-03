@@ -19,25 +19,30 @@ services:
       - /kdk-home-infra/conf/nginx_sites.conf:/etc/nginx/conf.d/default.conf:ro
       - /kdk-home-infra/conf/htpasswd:/etc/nginx/htpasswd:ro
       - /kdk-home-infra/docker/letsencrypt/etc/letsencrypt:/etc/letsencrypt:ro
+    networks:
+      wp:
+      caliwp:
+      fax:
+      registry:
   wp:
     image: wordpress:latest
-    links:
-    - wpdb:mysql
-    ports:
-    - 10080:80
     volumes:
     - /kdk-home-infra/docker/wp/var/www/html:/var/www/html
     - /kdk-home-infra/conf/wordpress_uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:ro
+    networks:
+      wp:
   wpdb:
     image: mariadb
     environment:
       MYSQL_ROOT_PASSWORD: {{ wpdb.MYSQL_ROOT_PASSWORD }}
     volumes:
       - /kdk-home-infra/docker/wpdb/var/lib/mysql:/var/lib/mysql
+    networks:
+      wp:
+        aliases:
+        - mysql
   caliwp:
     image: wordpress:latest
-    ports:
-    - 10081:80
     volumes:
     - /kdk-home-infra/docker/caliwp/var/www/html:/var/www/html
     - /kdk-home-infra/conf/wordpress_uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:ro
@@ -67,27 +72,18 @@ services:
     ports:
       - "3142:3142"
   # environment:
-    # - ACNG_BACKENDS_DEBIAN=http://mirrors.us.kernel.org/debian/
-    # - ACNG_BACKENDS_UBUNTU=http://mirrors.us.kernel.org/ubuntu/
+  #    - ACNG_BACKENDS_DEBIAN=http://mirrors.us.kernel.org/debian/
+  #    - ACNG_BACKENDS_UBUNTU=http://mirrors.us.kernel.org/ubuntu/
   #  volumes:
   #    - /kdk-home-infra/docker/aptcacherng/var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng
   registry: # docker registry
     image: registry:2
-    ports:
-    - 5000:5000
     volumes:
     - /kdk-home-infra/docker/registry/var/lib/registry:/var/lib/registry
-  mongofax:
-    image: mongo:4
-    volumes:
-    - /kdk-home-infra/docker/mongofax/data/configdb:/data/configdb
-    - /kdk-home-infra/docker/mongofax/data/db:/data/db
     networks:
-      fax:
+      registry:
   vaporfax:
     image: bludesign/faxserver:latest
-    ports:
-    - "20080:8080"
     volumes:
     - /kdk-home-infra/docker/vaporfax/FaxServer/Public:/FaxServer/Public
     environment:
@@ -100,10 +96,18 @@ services:
     - bash
     - -c
     - while true; do sleep 10; date; echo Alive; done
+  mongofax:
+    image: mongo:4
+    volumes:
+    - /kdk-home-infra/docker/mongofax/data/configdb:/data/configdb
+    - /kdk-home-infra/docker/mongofax/data/db:/data/db
+    networks:
+      fax:
 networks:
   fax:
   wp:
   caliwp:
+  registry:
 
 #####################################################################
 # Notes
