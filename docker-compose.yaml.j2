@@ -1,14 +1,6 @@
 version: "3"
 
 services:
-  dyndns:
-    image: bshaw/route53-dyndns
-    environment:
-      AWS_ACCESS_KEY_ID: {{ dyndns.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: {{ dyndns.AWS_SECRET_ACCESS_KEY }}
-      AWS_CONNECTION_REGION: {{ dyndns.AWS_CONNECTION_REGION }}
-      ROUTE53_DOMAIN_A_RECORD: {{ dyndns.ROUTE53_DOMAIN_A_RECORD }}
-      ROUTE53_UPDATE_FREQUENCY: 3600
   nginx:
     image: nginx:alpine
     ports:
@@ -20,94 +12,9 @@ services:
       - /docker-home-infra/conf/htpasswd:/etc/nginx/htpasswd:ro
       - /docker-home-infra/volumes/letsencrypt/etc/letsencrypt:/etc/letsencrypt:ro
     networks:
-      wp:
-      caliwp:
-      fax:
-      registry:
-  wp:
-    image: wordpress:latest
-    volumes:
-    - /docker-home-infra/volumes/wp/var/www/html:/var/www/html
-    - /docker-home-infra/conf/wordpress_uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:ro
-    networks:
-      wp:
-  wpdb:
-    image: mariadb
-    environment:
-      MYSQL_ROOT_PASSWORD: {{ wpdb.MYSQL_ROOT_PASSWORD }}
-    volumes:
-      - /docker-home-infra/volumes/wpdb/var/lib/mysql:/var/lib/mysql
-    networks:
-      wp:
-        aliases:
-        - mysql
-  caliwp:
-    image: wordpress:latest
-    volumes:
-    - /docker-home-infra/volumes/caliwp/var/www/html:/var/www/html
-    - /docker-home-infra/conf/wordpress_uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:ro
-    networks:
-      caliwp:
-  caliwpdb:
-    image: mariadb
-    environment:
-      MYSQL_ROOT_PASSWORD: {{ caliwpdb.MYSQL_ROOT_PASSWORD }}
-    volumes:
-      - /docker-home-infra/volumes/caliwpdb/var/lib/mysql:/var/lib/mysql
-    networks:
-      caliwp:
-        aliases:
-        - mysql
-  # To replace with gogs
-  git:
-    image: rastasheep/ubuntu-sshd
-    ports:
-      - "2222:22"
-    command: bash -c "apt-get update; apt-get install -y git; rm -f /etc/ssh/ssh_host_*; dpkg-reconfigure openssh-server; useradd git -m -G root -s /bin/bash -p '*'; mkdir -p /home/git/.ssh; cp /tmp/authorized_keys /home/git/.ssh/authorized_keys; chown -R git:git /home/git; echo 'git ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/git; /usr/sbin/sshd -D"
-    volumes:
-      - /docker-home-infra/volumes/git/home/git:/home/git
-      - /docker-home-infra/conf/authorized_keys:/tmp/authorized_keys:ro
-  aptcacherng:
-    image: minimum2scp/apt-cacher-ng
-    ports:
-      - "3142:3142"
-  # environment:
-  #    - ACNG_BACKENDS_DEBIAN=http://mirrors.us.kernel.org/debian/
-  #    - ACNG_BACKENDS_UBUNTU=http://mirrors.us.kernel.org/ubuntu/
-  #  volumes:
-  #    - /docker-home-infra/volumes/aptcacherng/var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng
-  registry: # docker registry
-    image: registry:2
-    volumes:
-    - /docker-home-infra/volumes/registry/var/lib/registry:/var/lib/registry
-    networks:
-      registry:
-  vaporfax:
-    image: bludesign/faxserver:latest
-    volumes:
-    - /docker-home-infra/volumes/vaporfax/FaxServer/Public:/FaxServer/Public
-    environment:
-    - MONGO_HOST=mongofax
-    - MONGO_PORT=27017
-    - VAPOR_HOST=0.0.0.0
-    networks:
-      fax:
-    entrypoint:
-    - bash
-    - -c
-    - while true; do sleep 10; date; echo Alive; done
-  mongofax:
-    image: mongo:4
-    volumes:
-    - /docker-home-infra/volumes/mongofax/data/configdb:/data/configdb
-    - /docker-home-infra/volumes/mongofax/data/db:/data/db
-    networks:
-      fax:
+      nginx:
 networks:
-  fax:
-  wp:
-  caliwp:
-  registry:
+  nginx:
 
 #####################################################################
 # Notes
@@ -124,8 +31,6 @@ networks:
 #   # After creation:
 #   # sudo emacs /docker-home-infra/volumes/plex/config/Library/Application\ Support/Plex\ Media\ Server/Preferences.xml
 #   # Add:  allowedNetworks="192.168.3.0/255.255.255.0"
-
-
 # restart only apt-cache and connect with bash
 # export ID=`docker ps|grep apt-cacher |awk '{print $1}'`; docker stop $ID; docker rm $ID; make config; docker-compose up -d; sleep 1; export ID=`docker ps|grep apt-cacher |awk '{print $1}'`; docker exec -it $ID bash
 
