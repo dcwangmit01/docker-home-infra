@@ -1,16 +1,44 @@
 .DEFAULT_GOAL := help
 
 config:  ## Generate all configuration files
-	jinja2 --format yaml docker-compose.yaml.j2 config.yaml > docker-compose.yaml
-	jinja2 --format yaml conf/nginx_sites.conf.j2 config.yaml > conf/nginx_sites.conf
-	jinja2 --format yaml conf/authorized_keys.j2 config.yaml > conf/authorized_keys
-	jinja2 --format yaml conf/htpasswd.j2 config.yaml > conf/htpasswd
+	find ./ -name '*.j2' | sed 's/\.[^.]*$$//' | awk '{print "jinja2 --format yaml " $$1 ".j2 config.yaml > " $$1}' | sh
 
-clean:  ## Remove intermediate files
-	rm -f conf/authorized_keys
-	rm -f conf/htpasswd
-	rm -f conf/nginx_sites.conf
-	rm -f docker-compose.yaml
+certbot-kickstart:  ## Kickstart the certbot configuration. create initial certs and configs so nginx can start
+	rm -rf ./volumes/certbot
+	docker run \
+	  -v $(PWD)/volumes/certbot/conf:/etc/letsencrypt \
+	  -v $(PWD)/volumes/certbot/www:/var/www/certbot \
+	  -p "80:80" --rm \
+	  certbot/certbot \
+	  certonly \
+	  --standalone \
+	  --non-interactive --agree-tos --expand \
+	  --renew-with-new-domains \
+	  --rsa-key-size 4096 \
+	  --cert-name 'wildcard.davidwang.com' \
+	  -m 'dcwangmit01@gmail.com' \
+	  -d 's.davidwang.com' -d 'hackmd.davidwang.com' -d 'plantuml.davidwang.com' -d 'whatismyip.davidwang.com'
+
+certbot-kickstart-test:  ## Test the certbot configuration using letsencrypt staging
+	@# The key difference here is the presence of --test-cert
+	docker run \
+	  -v $(PWD)/volumes/certbot/conf:/etc/letsencrypt \
+	  -v $(PWD)/volumes/certbot/www:/var/www/certbot \
+	  -p "80:80" --rm \
+	  certbot/certbot \
+	  certonly \
+	  --test-cert \
+	  --standalone \
+	  --non-interactive --agree-tos --expand \
+	  --renew-with-new-domains \
+	  --rsa-key-size 4096 \
+	  --cert-name 'wildcard.davidwang.com' \
+	  -m 'dcwangmit01@gmail.com' \
+	  -d 's.davidwang.com' -d 'hackmd.davidwang.com' -d 'plantuml.davidwang.com' -d 'whatismyip.davidwang.com'
+
+clean:  ## Remove generated files
+	@# Delete all jinja2-generated files
+	find ./ -name '*.j2' | sed 's/\.[^.]*$$//' | xargs rm -f
 
 
 help: ## Print list of Makefile targets
