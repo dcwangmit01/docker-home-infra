@@ -4,6 +4,7 @@ volumes/
 config.yaml
 config.yaml.private
 
-./conf/nginx/htpasswd
-./conf/nginx/sites-enabled/sites.conf
-./docker-compose.yaml
+conf/nginx/htpasswd
+conf/nginx/sites-enabled/sites.conf
+conf/nginx-hackmd-plantuml/sites-enabled/sites.conf
+docker-compose.yaml
