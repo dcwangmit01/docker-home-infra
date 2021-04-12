@@ -20,6 +20,8 @@ services:
       - 443:443
     restart: always
     command: /bin/sh -c "while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g 'daemon off;'"
+    depends_on:
+      - hackmd-o2p
 
   certbot:
     container_name: certbot
@@ -51,6 +53,8 @@ services:
     {%- for k,v in oauth2proxy.hackmd.items() %}
       - {{k}}={{v}}
     {%- endfor %}
+    depends_on:
+      - hackmd
 
   hackmd:
     container_name: hackmd
@@ -64,18 +68,18 @@ services:
       - CMD_ALLOW_ANONYMOUS=false
       - CMD_ALLOW_ANONYMOUS_EDITS=false
       - CMD_ALLOW_ANONYMOUS_VIEWS=false
-      - CMD_DB_URL=postgres://codimd:change_password@hackmd-postgres/codimd
+      - CMD_DB_URL=postgres://{{hackmd_postgres.POSTGRES_USER}}:{{hackmd_postgres.POSTGRES_PASSWORD}}@hackmd-postgres/{{hackmd_postgres.POSTGRES_DB}}
       - CMD_USECDN=false
       - CMD_PLANTUML_SERVER=https://plantuml.{{ nginx.domain }}
-    {%- for k,v in oauth2proxy.plantuml.items() %}
+    {%- for k,v in hackmd.items() %}
       - {{k}}={{v}}
     {%- endfor %}
-    depends_on:
-      - hackmd-postgres
     # port is 3000
     volumes:
       - ./volumes/hackmd/uploads:/home/hackmd/app/public/uploads
     restart: always
+    depends_on:
+      - hackmd-postgres
 
   hackmd-postgres:
     container_name: hackmd-postgres
@@ -83,9 +87,9 @@ services:
     networks:
       - nginx-net
     environment:
-      - POSTGRES_USER=codimd
-      - POSTGRES_PASSWORD=change_password
-      - POSTGRES_DB=codimd
+    {%- for k,v in hackmd_postgres.items() %}
+      - {{k}}={{v}}
+    {%- endfor %}
     volumes:
       - ./volumes/hackmd-postgres:/var/lib/postgresql/data
     restart: always
@@ -100,6 +104,8 @@ services:
     {%- for k,v in oauth2proxy.plantuml.items() %}
       - {{k}}={{v}}
     {%- endfor %}
+    depends_on:
+      - plantuml
 
   plantuml:
     container_name: plantuml

@@ -33,6 +33,9 @@ clean:  ## Remove generated files
 	@# Delete all jinja2-generated files
 	find ./ -name '*.j2' | sed 's/\.[^.]*$$//' | xargs rm -f
 
+update-git-ignore:  ## Updates .gitignore with jinja2-generated files
+	find ./ -name '*.j2' | sed 's/\.[^.]*$$//' >> .gitignore
+
 
 help: ## Print list of Makefile targets
 	@# Taken from https://github.com/spf13/hugo/blob/master/Makefile

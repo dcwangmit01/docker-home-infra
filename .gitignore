@@ -1,9 +1,9 @@
 backups/
 volumes/
 
-conf/authorized_keys
-conf/htpasswd
-conf/nginx_sites.conf
 config.yaml
 config.yaml.private
-docker-compose.yaml
+
+./conf/nginx/htpasswd
+./conf/nginx/sites-enabled/sites.conf
+./docker-compose.yaml
