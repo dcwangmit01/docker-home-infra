@@ -27,15 +27,29 @@ services:
   certbot:
     container_name: certbot
     image: certbot/certbot
+    entrypoint: /bin/sh -c "trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;"
     networks:
       - home-infra-net
     volumes:
       - ./volumes/certbot/conf:/etc/letsencrypt
       - ./volumes/certbot/www:/var/www/certbot
     restart: always
-    entrypoint: /bin/sh -c "trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;"
     depends_on:
       - nginx
+
+  hackmd-o2p:
+    container_name: hackmd-o2p
+    image: quay.io/oauth2-proxy/oauth2-proxy
+    networks:
+      - home-infra-net
+    # port is 4180
+    environment:
+    {%- for k,v in oauth2proxy.hackmd.items() %}
+      - {{k}}={{v}}
+    {%- endfor %}
+    restart: always
+    depends_on:
+      - nginx-hackmd-plantuml
 
   nginx-hackmd-plantuml:
     container_name: nginx-hackmd-plantuml
@@ -51,19 +65,6 @@ services:
     depends_on:
       - hackmd
       - plantuml
-
-  hackmd-o2p:
-    container_name: hackmd-o2p
-    image: quay.io/oauth2-proxy/oauth2-proxy
-    networks:
-      - home-infra-net
-    # port is 4180
-    environment:
-    {%- for k,v in oauth2proxy.hackmd.items() %}
-      - {{k}}={{v}}
-    {%- endfor %}
-    depends_on:
-      - nginx-hackmd-plantuml
 
   hackmd:
     container_name: hackmd
