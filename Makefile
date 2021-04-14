@@ -6,7 +6,6 @@ CERTBOT_COMMAND = docker run \
   -p "80:80" --rm \
   certbot/certbot \
   certonly \
-  --test-cert \
   --standalone \
   --non-interactive --agree-tos --expand \
   --renew-with-new-domains \

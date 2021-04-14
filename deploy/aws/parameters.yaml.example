@@ -2,10 +2,6 @@
   ParameterValue: REPLACE
 - ParameterKey: InstanceType
   ParameterValue: m4.large
-- ParameterKey: InstanceAllowedSshCidr
-  ParameterValue: REPLACE
-- ParameterKey: KeyName
-  ParameterValue: REPLACE
 - ParameterKey: TagApplicationName
   ParameterValue: REPLACE
 - ParameterKey: TagMailAlias

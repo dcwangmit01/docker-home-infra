@@ -1,12 +1,62 @@
-Description: This template deploys an EC2 instance in a VPC that has been
-  created with a public and private subnet pair in one Availability Zone. It
-  deploys an internet gateway, with a default route on the public subnet. It
-  deploys a NAT gateway and default routes for in in the private subnet.
-
 AWSTemplateFormatVersion: "2010-09-09"
+
+Description: This template deploys an EC2 instance in a VPC that has been created with a public and private subnet pair in one Availability Zone. It deploys an internet gateway, with a default route on the public subnet. It deploys a NAT gateway and default routes for in in the private subnet.  Ports 80 and 443 will be open.
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Description: An environment name that is prefixed to resource names
+
+  InstanceType:
+    Type: String
+    Default: m1.small
+    Description: "Type of instance https://aws.amazon.com/ec2/instance-types"
+
+  PrivateSubnet1CIDR:
+    Type: String
+    Default: "10.192.20.0/24"
+    Description: Please enter the IP range (CIDR notation) for the private subnet in the first Availability Zone
+
+  PublicSubnet1CIDR:
+    Type: String
+    Default: "10.192.10.0/24"
+    Description: Please enter the IP range (CIDR notation) for the public subnet in the first Availability Zone
+
+  TagApplicationName:
+    Type: String
+    Description: Corporate Required Tag
+
+  TagDataClassification:
+    Type: String
+    Description: Corporate Required Tag
+
+  TagDataTaxonomy:
+    Type: String
+    Description: Corporate Required Tag
+
+  TagEnvironment:
+    Type: String
+    Description: Corporate Required Tag
+
+  TagMailAlias:
+    Type: String
+    Description: Corporate Required Tag
+
+  TagOrgRole:
+    Type: String
+    Description: Corporate Required Tag
+
+  TagResourceOwner:
+    Type: String
+    Description: Corporate Required Tag
+
+  VpcCIDR:
+    Type: String
+    Default: "10.192.0.0/16"
+    Description: Please enter the IP range (CIDR notation) for this VPC
+
 Mappings:
   AWSRegionParamsMap:
-    # Ubuntu Server 20.04
     us-east-1:
       image: ami-042e8287309f5df03
     us-east-2:
@@ -16,294 +66,272 @@ Mappings:
     us-west-2:
       image: ami-0ca5c3bd5a268e7db
 
-Parameters:
-  EnvironmentName:
-    Description: An environment name that is prefixed to resource names
-    Type: String
-
-  VpcCIDR:
-    Description: Please enter the IP range (CIDR notation) for this VPC
-    Type: String
-    Default: 10.192.0.0/16
-
-  PublicSubnet1CIDR:
-    Description: Please enter the IP range (CIDR notation) for the public subnet in the first Availability Zone
-    Type: String
-    Default: 10.192.10.0/24
-
-  PrivateSubnet1CIDR:
-    Description: Please enter the IP range (CIDR notation) for the private subnet in the first Availability Zone
-    Type: String
-    Default: 10.192.20.0/24
-
-  InstanceType:
-    Description: Type of instance https://aws.amazon.com/ec2/instance-types
-    Type: String
-    Default: m1.small
-  KeyName:
-    Description: Name of KeyPair to install on InstanceType for ssh
-    Type: String
-  InstanceAllowedSshCidr:
-    Description: Allowed CIDR range for SSH to instance
-    Type: String
-    Default: 0.0.0.0/32
-
-  TagApplicationName:
-    Description: Corporate Required Tag
-    Type: String
-  TagMailAlias:
-    Description: Corporate Required Tag
-    Type: String
-  TagResourceOwner:
-    Description: Corporate Required Tag
-    Type: String
-  TagDataClassification:
-    Description: Corporate Required Tag
-    Type: String
-  TagEnvironment:
-    Description: Corporate Required Tag
-    Type: String
-  TagDataTaxonomy:
-    Description: Corporate Required Tag
-    Type: String
-  TagOrgRole:
-    Description: Corporate Required Tag
-    Type: String
-
 Resources:
-  VPC:
-    Type: AWS::EC2::VPC
-    Properties:
-      CidrBlock: !Ref VpcCIDR
-      EnableDnsSupport: true
-      EnableDnsHostnames: true
-      Tags:
-        - Key: Name
-          Value: !Ref EnvironmentName
-        - Key: ApplicationName
-          Value: !Ref TagApplicationName
-        - Key: MailAlias
-          Value: !Ref TagMailAlias
-        - Key: ResourceOwner
-          Value: !Ref TagResourceOwner
-        - Key: DataClassification
-          Value: !Ref TagDataClassification
-        - Key: Environment
-          Value: !Ref TagEnvironment
-        - Key: DataTaxonomy
-          Value: !Ref TagDataTaxonomy
-        - Key: OrgRole
-          Value: !Ref TagOrgRole
-
-  InternetGateway:
-    Type: AWS::EC2::InternetGateway
-    Properties:
-      Tags:
-        - Key: Name
-          Value: !Ref EnvironmentName
-        - Key: ApplicationName
-          Value: !Ref TagApplicationName
-        - Key: MailAlias
-          Value: !Ref TagMailAlias
-        - Key: ResourceOwner
-          Value: !Ref TagResourceOwner
-        - Key: DataClassification
-          Value: !Ref TagDataClassification
-        - Key: Environment
-          Value: !Ref TagEnvironment
-        - Key: DataTaxonomy
-          Value: !Ref TagDataTaxonomy
-        - Key: OrgRole
-          Value: !Ref TagOrgRole
-
-  InternetGatewayAttachment:
-    Type: AWS::EC2::VPCGatewayAttachment
-    Properties:
-      InternetGatewayId: !Ref InternetGateway
-      VpcId: !Ref VPC
-
-  PublicSubnet1:
-    Type: AWS::EC2::Subnet
-    Properties:
-      VpcId: !Ref VPC
-      AvailabilityZone: !Select [ 0, !GetAZs '' ]
-      CidrBlock: !Ref PublicSubnet1CIDR
-      MapPublicIpOnLaunch: true
-      Tags:
-        - Key: Name
-          Value: !Sub ${EnvironmentName} Public Subnet (AZ1)
-        - Key: ApplicationName
-          Value: !Ref TagApplicationName
-        - Key: MailAlias
-          Value: !Ref TagMailAlias
-        - Key: ResourceOwner
-          Value: !Ref TagResourceOwner
-        - Key: DataClassification
-          Value: !Ref TagDataClassification
-        - Key: Environment
-          Value: !Ref TagEnvironment
-        - Key: DataTaxonomy
-          Value: !Ref TagDataTaxonomy
-        - Key: OrgRole
-          Value: !Ref TagOrgRole
-
-
-  PrivateSubnet1:
-    Type: AWS::EC2::Subnet
-    Properties:
-      VpcId: !Ref VPC
-      AvailabilityZone: !Select [ 0, !GetAZs  '' ]
-      CidrBlock: !Ref PrivateSubnet1CIDR
-      MapPublicIpOnLaunch: false
-      Tags:
-        - Key: Name
-          Value: !Sub ${EnvironmentName} Private Subnet (AZ1)
-        - Key: ApplicationName
-          Value: !Ref TagApplicationName
-        - Key: MailAlias
-          Value: !Ref TagMailAlias
-        - Key: ResourceOwner
-          Value: !Ref TagResourceOwner
-        - Key: DataClassification
-          Value: !Ref TagDataClassification
-        - Key: Environment
-          Value: !Ref TagEnvironment
-        - Key: DataTaxonomy
-          Value: !Ref TagDataTaxonomy
-        - Key: OrgRole
-          Value: !Ref TagOrgRole
-
   NatGateway1EIP:
-    Type: AWS::EC2::EIP
+    Type: "AWS::EC2::EIP"
     DependsOn: InternetGatewayAttachment
     Properties:
       Domain: vpc
 
+  PublicWebserverSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: Allows 80, 443 from all, 22 from specific range
+      SecurityGroupIngress:
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 80
+          IpProtocol: tcp
+          ToPort: 80
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+
+  InternetGateway:
+    Type: "AWS::EC2::InternetGateway"
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-InternetGateway
+        - Key: ApplicationName
+          Value: !Ref TagApplicationName
+        - Key: MailAlias
+          Value: !Ref TagMailAlias
+        - Key: ResourceOwner
+          Value: !Ref TagResourceOwner
+        - Key: DataClassification
+          Value: !Ref TagDataClassification
+        - Key: Environment
+          Value: !Ref TagEnvironment
+        - Key: DataTaxonomy
+          Value: !Ref TagDataTaxonomy
+        - Key: OrgRole
+          Value: !Ref TagOrgRole
+
+  PublicWebserverRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        - PolicyName: enable-aws-cli-ssm-ec2-console
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "ssmmessages:CreateControlChannel"
+                  - "ssmmessages:CreateDataChannel"
+                  - "ssmmessages:OpenControlChannel"
+                  - "ssmmessages:OpenDataChannel"
+                  - "ssm:UpdateInstanceInformation"
+                Resource: "*"
+      RoleName: !Sub ${EnvironmentName}-Role
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-Role
+        - Key: ApplicationName
+          Value: !Ref TagApplicationName
+        - Key: MailAlias
+          Value: !Ref TagMailAlias
+        - Key: ResourceOwner
+          Value: !Ref TagResourceOwner
+        - Key: DataClassification
+          Value: !Ref TagDataClassification
+        - Key: Environment
+          Value: !Ref TagEnvironment
+        - Key: DataTaxonomy
+          Value: !Ref TagDataTaxonomy
+        - Key: OrgRole
+          Value: !Ref TagOrgRole
+
+  PublicWebserverInstanceProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties:
+      InstanceProfileName: !Sub ${EnvironmentName}-InstanceProfile
+      Roles:
+        - Ref: PublicWebserverRole
+
+  VPC:
+    Type: "AWS::EC2::VPC"
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-Vpc
+        - Key: ApplicationName
+          Value: !Ref TagApplicationName
+        - Key: MailAlias
+          Value: !Ref TagMailAlias
+        - Key: ResourceOwner
+          Value: !Ref TagResourceOwner
+        - Key: DataClassification
+          Value: !Ref TagDataClassification
+        - Key: Environment
+          Value: !Ref TagEnvironment
+        - Key: DataTaxonomy
+          Value: !Ref TagDataTaxonomy
+        - Key: OrgRole
+          Value: !Ref TagOrgRole
+
+  PrivateRouteTable1:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-PrivateRoutes-AZ1
+        - Key: ApplicationName
+          Value: !Ref TagApplicationName
+        - Key: MailAlias
+          Value: !Ref TagMailAlias
+        - Key: ResourceOwner
+          Value: !Ref TagResourceOwner
+        - Key: DataClassification
+          Value: !Ref TagDataClassification
+        - Key: Environment
+          Value: !Ref TagEnvironment
+        - Key: DataTaxonomy
+          Value: !Ref TagDataTaxonomy
+        - Key: OrgRole
+          Value: !Ref TagOrgRole
+      VpcId: !Ref VPC
+
+  PublicRouteTable:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-PublicRoutes
+        - Key: ApplicationName
+          Value: !Ref TagApplicationName
+        - Key: MailAlias
+          Value: !Ref TagMailAlias
+        - Key: ResourceOwner
+          Value: !Ref TagResourceOwner
+        - Key: DataClassification
+          Value: !Ref TagDataClassification
+        - Key: Environment
+          Value: !Ref TagEnvironment
+        - Key: DataTaxonomy
+          Value: !Ref TagDataTaxonomy
+        - Key: OrgRole
+          Value: !Ref TagOrgRole
+      VpcId: !Ref VPC
+
+  InternetGatewayAttachment:
+    Type: "AWS::EC2::VPCGatewayAttachment"
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+  PrivateSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: !Select
+        - 0
+        - "Fn::GetAZs": ""
+      CidrBlock: !Ref PrivateSubnet1CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-PrivateSubnet-AZ1
+        - Key: ApplicationName
+          Value: !Ref TagApplicationName
+        - Key: MailAlias
+          Value: !Ref TagMailAlias
+        - Key: ResourceOwner
+          Value: !Ref TagResourceOwner
+        - Key: DataClassification
+          Value: !Ref TagDataClassification
+        - Key: Environment
+          Value: !Ref TagEnvironment
+        - Key: DataTaxonomy
+          Value: !Ref TagDataTaxonomy
+        - Key: OrgRole
+          Value: !Ref TagOrgRole
+      VpcId: !Ref VPC
+
+  PublicSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: !Select
+        - 0
+        - "Fn::GetAZs": ""
+      CidrBlock: !Ref PublicSubnet1CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-PublicSubnet-AZ1
+        - Key: ApplicationName
+          Value: !Ref TagApplicationName
+        - Key: MailAlias
+          Value: !Ref TagMailAlias
+        - Key: ResourceOwner
+          Value: !Ref TagResourceOwner
+        - Key: DataClassification
+          Value: !Ref TagDataClassification
+        - Key: Environment
+          Value: !Ref TagEnvironment
+        - Key: DataTaxonomy
+          Value: !Ref TagDataTaxonomy
+        - Key: OrgRole
+          Value: !Ref TagOrgRole
+      VpcId: !Ref VPC
+
+  DefaultPublicRoute:
+    Type: "AWS::EC2::Route"
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref InternetGateway
+      RouteTableId: !Ref PublicRouteTable
+
   NatGateway1:
-    Type: AWS::EC2::NatGateway
+    Type: "AWS::EC2::NatGateway"
     Properties:
       AllocationId: !GetAtt NatGateway1EIP.AllocationId
       SubnetId: !Ref PublicSubnet1
 
-  PublicRouteTable:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !Ref VPC
-      Tags:
-        - Key: Name
-          Value: !Sub ${EnvironmentName} Public Routes
-        - Key: ApplicationName
-          Value: !Ref TagApplicationName
-        - Key: MailAlias
-          Value: !Ref TagMailAlias
-        - Key: ResourceOwner
-          Value: !Ref TagResourceOwner
-        - Key: DataClassification
-          Value: !Ref TagDataClassification
-        - Key: Environment
-          Value: !Ref TagEnvironment
-        - Key: DataTaxonomy
-          Value: !Ref TagDataTaxonomy
-        - Key: OrgRole
-          Value: !Ref TagOrgRole
-
-  DefaultPublicRoute:
-    Type: AWS::EC2::Route
-    DependsOn: InternetGatewayAttachment
-    Properties:
-      RouteTableId: !Ref PublicRouteTable
-      DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref InternetGateway
-
-  PublicSubnet1RouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref PublicRouteTable
-      SubnetId: !Ref PublicSubnet1
-
-  PrivateRouteTable1:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !Ref VPC
-      Tags:
-        - Key: Name
-          Value: !Sub ${EnvironmentName} Private Routes (AZ1)
-        - Key: ApplicationName
-          Value: !Ref TagApplicationName
-        - Key: MailAlias
-          Value: !Ref TagMailAlias
-        - Key: ResourceOwner
-          Value: !Ref TagResourceOwner
-        - Key: DataClassification
-          Value: !Ref TagDataClassification
-        - Key: Environment
-          Value: !Ref TagEnvironment
-        - Key: DataTaxonomy
-          Value: !Ref TagDataTaxonomy
-        - Key: OrgRole
-          Value: !Ref TagOrgRole
-
-  DefaultPrivateRoute1:
-    Type: AWS::EC2::Route
-    Properties:
-      RouteTableId: !Ref PrivateRouteTable1
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref NatGateway1
-
   PrivateSubnet1RouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
     Properties:
       RouteTableId: !Ref PrivateRouteTable1
       SubnetId: !Ref PrivateSubnet1
 
-  NoIngressSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
+  PublicSubnet1RouteTableAssociation:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
     Properties:
-      GroupName: "no-ingress-sg"
-      GroupDescription: "Security group with no ingress rule"
-      VpcId: !Ref VPC
-
-  PublicWebserverSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Allows 80, 443 from all, 22 from specific range
-      SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: 80
-        ToPort: 80
-        CidrIp: 0.0.0.0/0
-      - IpProtocol: tcp
-        FromPort: 443
-        ToPort: 443
-        CidrIp: 0.0.0.0/0
-      - IpProtocol: tcp
-        FromPort: 22
-        ToPort: 22
-        CidrIp: !Ref InstanceAllowedSshCidr
-
-  PublicWebserverEIP:
-    Type: AWS::EC2::EIP
-    Properties:
-      InstanceId: !Ref PublicWebserverInstance
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet1
 
   PublicWebserverInstance:
-    Type: AWS::EC2::Instance
+    Type: "AWS::EC2::Instance"
     Properties:
-        ImageId: !FindInMap [ AWSRegionParamsMap, !Ref 'AWS::Region', image ]
-        InstanceType: !Ref InstanceType
-        KeyName: !Ref KeyName
-        SecurityGroups:
-        - !Ref PublicWebserverSecurityGroup
-        BlockDeviceMappings:
+      BlockDeviceMappings:
         - DeviceName: /dev/sda1
           Ebs:
-            VolumeSize: 50
-        - DeviceName: /dev/sdm
-          Ebs:
-            VolumeSize: 100
-        Tags:
+            DeleteOnTermination: false
+            VolumeSize: 128
+      IamInstanceProfile: !Ref PublicWebserverInstanceProfile
+      ImageId: !FindInMap
+        - AWSRegionParamsMap
+        - Ref: "AWS::Region"
+        - image
+      InstanceType: !Ref InstanceType
+      SecurityGroups:
+        - Ref: PublicWebserverSecurityGroup
+      Tags:
         - Key: Name
-          Value: !Sub ${EnvironmentName} Private Routes (AZ1)
+          Value: !Sub ${EnvironmentName}-PublicWebserverInstance
         - Key: ApplicationName
           Value: !Ref TagApplicationName
         - Key: MailAlias
@@ -319,27 +347,39 @@ Resources:
         - Key: OrgRole
           Value: !Ref TagOrgRole
 
-Outputs:
-  VPC:
-    Description: A reference to the created VPC
-    Value: !Ref VPC
+  PublicWebserverEIP:
+    Type: "AWS::EC2::EIP"
+    Properties:
+      InstanceId: !Ref PublicWebserverInstance
 
-  PublicSubnets:
-    Description: A list of the public subnets
-    Value: !Join [ ",", [ !Ref PublicSubnet1 ]]
+  DefaultPrivateRoute1:
+    Type: "AWS::EC2::Route"
+    Properties:
+      DestinationCidrBlock: "0.0.0.0/0"
+      NatGatewayId: !Ref NatGateway1
+      RouteTableId: !Ref PrivateRouteTable1
+
+Outputs:
+  PrivateSubnet1:
+    Description: A reference to the private subnet in the 1st Availability Zone
+    Value: !Ref PrivateSubnet1
 
   PrivateSubnets:
     Description: A list of the private subnets
-    Value: !Join [ ",", [ !Ref PrivateSubnet1 ]]
+    Value: !Join
+      - ","
+      - - Ref: PrivateSubnet1
 
   PublicSubnet1:
     Description: A reference to the public subnet in the 1st Availability Zone
     Value: !Ref PublicSubnet1
 
-  PrivateSubnet1:
-    Description: A reference to the private subnet in the 1st Availability Zone
-    Value: !Ref PrivateSubnet1
+  PublicSubnets:
+    Description: A list of the public subnets
+    Value: !Join
+      - ","
+      - - Ref: PublicSubnet1
 
-  NoIngressSecurityGroup:
-    Description: Security group with no ingress rule
-    Value: !Ref NoIngressSecurityGroup
+  VPC:
+    Description: A reference to the created VPC
+    Value: !Ref VPC
