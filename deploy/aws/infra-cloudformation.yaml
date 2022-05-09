@@ -87,6 +87,55 @@ Resources:
           IpProtocol: tcp
           ToPort: 443
 
+  DlmRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - dlm.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Path: /service-role/dlm/
+      Policies:
+        - PolicyName: dlmPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "ec2:CreateSnapshot"
+                  - "ec2:CreateSnapshots"
+                  - "ec2:DeleteSnapshot"
+                  - "ec2:DescribeVolumes"
+                  - "ec2:DescribeInstances"
+                  - "ec2:DescribeSnapshots"
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - "ec2:CreateTags"
+                Resource: "arn:aws:ec2:*::snapshot/*"
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-DlmRole
+        - Key: ApplicationName
+          Value: !Ref TagApplicationName
+        - Key: MailAlias
+          Value: !Ref TagMailAlias
+        - Key: ResourceOwner
+          Value: !Ref TagResourceOwner
+        - Key: DataClassification
+          Value: !Ref TagDataClassification
+        - Key: Environment
+          Value: !Ref TagEnvironment
+        - Key: DataTaxonomy
+          Value: !Ref TagDataTaxonomy
+        - Key: OrgRole
+          Value: !Ref TagOrgRole
+
   InternetGateway:
     Type: "AWS::EC2::InternetGateway"
     Properties:
@@ -137,6 +186,55 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub ${EnvironmentName}-Role
+        - Key: ApplicationName
+          Value: !Ref TagApplicationName
+        - Key: MailAlias
+          Value: !Ref TagMailAlias
+        - Key: ResourceOwner
+          Value: !Ref TagResourceOwner
+        - Key: DataClassification
+          Value: !Ref TagDataClassification
+        - Key: Environment
+          Value: !Ref TagEnvironment
+        - Key: DataTaxonomy
+          Value: !Ref TagDataTaxonomy
+        - Key: OrgRole
+          Value: !Ref TagOrgRole
+
+  DlmLifecyclePolicy:
+    Type: "AWS::DLM::LifecyclePolicy"
+    Properties:
+      Description: !Sub Daily and Weekly Backups of ${EnvironmentName}-PublicWebserverInstance
+      ExecutionRoleArn: !GetAtt DlmRole.Arn
+      PolicyDetails:
+        ResourceTypes:
+          - INSTANCE
+        Schedules:
+          - Name: Daily MON WED FRI Snapshots with 3 Count Retention
+            CopyTags: true
+            CreateRule:
+              CronExpression: cron(0 0 ? * MON,WED,FRI *)
+            RetainRule:
+              Count: 3
+            TagsToAdd:
+              - Key: BackupPeriod
+                Value: Daily
+          - Name: Weekly SUN Snapshots with 5 Count Retention
+            CopyTags: true
+            CreateRule:
+              CronExpression: cron(0 0 ? * SUN *)
+            RetainRule:
+              Count: 5
+            TagsToAdd:
+              - Key: BackupPeriod
+                Value: Weekly
+        TargetTags:
+          - Key: Name
+            Value: !Sub ${EnvironmentName}-PublicWebserverInstance
+      State: ENABLED
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-DlmLifecyclePolicy-DailyBackup
         - Key: ApplicationName
           Value: !Ref TagApplicationName
         - Key: MailAlias
