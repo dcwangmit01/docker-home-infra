@@ -7,7 +7,6 @@ This docker-compose file runs self-hosted infrastructure services including:
 
 * Nginx w/ Certbot SSL reverse proxy
 * Hackmd -> (Postgres + PlantUml)
-* Wireguard
 
 
 ## Create a configuration file
@@ -29,11 +28,11 @@ letsencrypt:
 nginx:
   domain: domain.com
   htpasswd:
-  # list of username:password_hashes
+  # optional list of '- "username:password_hashes"'
   # created by: "htpasswd -n <user>", then enter <password>
 
 hackmd:
-  # https://github.com/organizations/<REPLACE>/settings/applications
+  # https://github.com/organizations/<REPLACE_ORG_NAME>/settings/applications
   # oauth callback is: https://hackmd.domain.com/auth/github/callback
   CMD_GITHUB_CLIENTID: <REPLACE>
   CMD_GITHUB_CLIENTSECRET: <REPLACE>
@@ -44,7 +43,7 @@ hackmd_postgres:
   POSTGRES_DB: codimd
 
 oauth2proxy:
-  # https://github.com/organizations/<REPLACE>/settings/applications
+  # https://github.com/organizations/<REPLACE_ORG_NAME>/settings/applications
   # oauth2 callback is: https://server.domain.com/oauth2/callback
 
   # hackmd.domain.com
